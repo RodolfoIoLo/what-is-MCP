@@ -1,62 +1,60 @@
-import anyio
+import asyncio
+import sys
+from pathlib import Path
 
 from mcp import Client, StdioServerParameters
 from mcp.types import TextContent, TextResourceContents
 
-# 告诉 SDK:把 server.py 当子进程启动,用 stdio 通信
-SERVER = StdioServerParameters(command="python", args=["server.py"])
+# 使用与 client 相同的 Python；脚本路径不依赖当前工作目录。
+SERVER = StdioServerParameters(
+    command=sys.executable,
+    args=[str(Path(__file__).with_name("server.py"))],
+)
 
 
 async def main() -> None:
+    # 进入时启动 server 子进程；离开时关闭连接并清理子进程。
     async with Client(SERVER) as client:
-        # 1. 连接建立后,这些信息已经填好了
-        print("服务器:", client.server_info)
-        print("协议版本:", client.protocol_version)
+        print("服务器：", client.server_info)
+        print("协议版本：", client.protocol_version)
 
-        # 2. 列出工具
         tools = await client.list_tools()
-        print("\n工具:")
-        for t in tools.tools:
-            print(" -", t.name, "|", t.title)
+        print("\n工具：")
+        for tool in tools.tools:
+            print(" -", tool.name, "|", tool.title)
 
-        # 3. 调用工具
-        res = await client.call_tool("list_tables", {})
-        print("\nlist_tables ->", res.structured_content)
+        result = await client.call_tool("list_tables", {})
+        print("\nlist_tables ->", result.structured_content)
 
-        res = await client.call_tool(
+        result = await client.call_tool(
             "query", {"sql": "SELECT count(*) AS n FROM orders"}
         )
-        print("query ->", res.structured_content)
+        print("query ->", result.structured_content)
 
-        # 4. 故意写一条非法查询,看失败长什么样
+        # 失败也是需要查看的结果：这次调用应被 server 拒绝。
         bad = await client.call_tool("query", {"sql": "DROP TABLE orders"})
         print("\n非法查询 -> is_error =", bad.is_error)
         for block in bad.content:
             if isinstance(block, TextContent):
-                print("   错误信息:", block.text)
+                print("   错误信息：", block.text)
 
-        # 5. 资源
         listed = await client.list_resources()
-        print("\n资源:", [r.uri for r in listed.resources])
-
+        print("\n资源：", [str(resource.uri) for resource in listed.resources])
         templates = await client.list_resource_templates()
-        print("资源模板:", [t.uri_template for t in templates.resource_templates])
+        print("资源模板：", [item.uri_template for item in templates.resource_templates])
 
-        content = await client.read_resource("schema://tables")
-        for c in content.contents:
-            if isinstance(c, TextResourceContents):
-                print("\nschema 前 100 字:", c.text[:100].replace("\n", " "))
-
-        # 6. 提示模板
-        prompts = await client.list_prompts()
-        print("\n提示模板:", [p.name for p in prompts.prompts])
+        resource = await client.read_resource("schema://tables")
+        for block in resource.contents:
+            if isinstance(block, TextResourceContents):
+                print("\nschema 前 100 字：", block.text[:100].replace("\n", " "))
 
         rendered = await client.get_prompt(
             "write_analysis_query", {"question": "每个城市的订单总金额"}
         )
-        for m in rendered.messages:
-            print("   ", m.role, "->", m.content.text[:50])
+        for message in rendered.messages:
+            if isinstance(message.content, TextContent):
+                print("提示模板：", message.role, "->", message.content.text[:80])
 
 
 if __name__ == "__main__":
-    anyio.run(main)
+    asyncio.run(main())
