@@ -18,7 +18,7 @@ import (
 const maxFileBytes = 64 * 1024
 const maxEntries = 100
 
-// JSON字段名是客户端实际发送的名字
+// JSON字段名是客户端实际发送的名字 (json标签决定对外字段名,jsonschema标签补充参数说明)
 type PathInput struct {
 	Path string `json:"path" jsonschema:"Path relative to the configured root; use . for its top directory"`
 }
@@ -55,7 +55,7 @@ func main() {
 	rootPath := flag.String("root", "./workspace", "Directory available to this server")
 	flag.Parse()
 
-	root, err := os.OpenRoot(*rootPath)
+	root, err := os.OpenRoot(*rootPath) // 返回的是一个*os.Root, 不是普通的string
 	if err != nil {
 		log.Fatal("无法打开根目录: ", err)
 	}
