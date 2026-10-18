@@ -123,7 +123,7 @@ figcaption{font-size:13px;color:var(--text-3);text-align:center;margin-top:12px;
     <a href="05-configure.html">05 · 怎么配置</a>
     <a href="06-python.html" class="active">06 · Python 完整实现</a>
     <a href="07-go.html">07 · Go 文件系统 MCP</a>
-    <a href="mcp-demo-py/README.md">手册 · Python SDK</a>
+    <a href="../mcp-demo-py/README.md">手册 · Python SDK</a>
   </div>
   <div class="side-group">
     <div class="gh">本册目录</div>
@@ -453,7 +453,7 @@ if __name__ == "__main__":
     </tbody>
   </table>
 
-  <p>三者最容易混的是「谁在用」：<b>工具接受名字和参数，资源按 URI 读取，提示模板生成消息。</b>模型可以选择工具，Host 负责执行调用；资源和模板也需要 Host 主动接入。（每一条链路具体走哪个方法名、返回什么，<a href="mcp-demo-py/README.md">Python SDK 手册</a>里有逐条对照。）</p>
+  <p>三者最容易混的是「谁在用」：<b>工具接受名字和参数，资源按 URI 读取，提示模板生成消息。</b>模型可以选择工具，Host 负责执行调用；资源和模板也需要 Host 主动接入。（每一条链路具体走哪个方法名、返回什么，<a href="../mcp-demo-py/README.md">Python SDK 手册</a>里有逐条对照。）</p>
 
   <h3>逐段讲解</h3>
 
@@ -615,7 +615,7 @@ def write_analysis_query(question: str) -&gt; str:
 
   <h4>可选：用 curl 观察旧版兼容链路</h4>
 
-  <p>以下示例主动选择 <b>2025-11-25 旧版协议</b>，用于理解 SDK 的兼容行为，不代表新版 Client 的默认流程。这条链路先发 <code>initialize</code>、从响应头取得 <code>mcp-session-id</code>，再发送初始化完成通知；后续请求携带会话 ID 和协议版本。只想使用 HTTP 的读者，可以直接参考 <a href="mcp-demo-py/README.md">README 第 9 节的高层 Client 用法</a>。</p>
+  <p>以下示例主动选择 <b>2025-11-25 旧版协议</b>，用于理解 SDK 的兼容行为，不代表新版 Client 的默认流程。这条链路先发 <code>initialize</code>、从响应头取得 <code>mcp-session-id</code>，再发送初始化完成通知；后续请求携带会话 ID 和协议版本。只想使用 HTTP 的读者，可以直接参考 <a href="../mcp-demo-py/README.md">README 第 9 节的高层 Client 用法</a>。</p>
 
   <div class="codeblock">
     <span class="lang">bash</span>
@@ -684,8 +684,8 @@ from mcp.types import TextContent, TextResourceContents
 
 # 使用与 client 相同的 Python；脚本路径不依赖当前工作目录。
 SERVER = StdioServerParameters(
-    command=sys.executable,
-    args=[str(Path(__file__).with_name("server.py"))],
+    command=sys.executable, # 表示“使用当前这个 Python 解释器”
+    args=[str(Path(__file__).with_name("server.py"))], # 运行同目录的 server.py
 )
 
 

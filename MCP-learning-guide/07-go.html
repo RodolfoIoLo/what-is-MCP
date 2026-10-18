@@ -121,7 +121,7 @@ tbody tr:hover{background:var(--bg-soft)}
     <a href="05-configure.html">05 · 怎么配置</a>
     <a href="06-python.html">06 · Python 完整实现</a>
     <a href="07-go.html" class="active">07 · Go 文件系统 MCP</a>
-    <a href="mcp-demo-py/README.md">手册 · Python SDK</a>
+    <a href="../mcp-demo-py/README.md">手册 · Python SDK</a>
   </div>
   <div class="side-group">
     <div class="gh">本册目录</div>
@@ -240,7 +240,7 @@ func main() {
 	rootPath := flag.String("root", "./workspace", "Directory available to this server")
 	flag.Parse()
 
-	root, err := os.OpenRoot(*rootPath)
+	root, err := os.OpenRoot(*rootPath) // 返回的是一个 *os.Root，不是普通字符串
 	if err != nil {
 		log.Fatal("无法打开根目录：", err)
 	}
@@ -294,6 +294,7 @@ func main() {
 		if err != nil || !info.Mode().IsRegular() {
 			return nil, FileResult{}, fmt.Errorf("请提供普通文本文件的路径")
 		}
+		// 多读 1 字节，才能区分“恰好达到上限”和“超过上限”。
 		data, err := io.ReadAll(io.LimitReader(file, maxFileBytes+1))
 		if err != nil {
 			return nil, FileResult{}, fmt.Errorf("读取 %q 失败", input.Path)
@@ -529,7 +530,7 @@ Client SDK 解码 → result.StructuredContent → 打印 JSON</div>
 </tbody></table>
 <p>核对接口时可参考 <a href="https://github.com/modelcontextprotocol/go-sdk/tree/v1.8.0">官方 Go SDK v1.8.0</a>、<a href="https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk/mcp">mcp 包参考</a>和 <a href="https://pkg.go.dev/os#Root">os.Root 文档</a>。本章示例围绕目录和普通文本文件展开，扩展到大文件、分页或写入时，需要重新设计接口与边界。</p>
 <div class="summary-box"><div class="st">把这三个动作记下来</div><p>用结构体描述输入输出，用 <code>mcp.AddTool</code> 注册处理函数，用 <code>server.Run</code> 接收请求。文件怎么读由你写，MCP 消息怎么收发由 SDK 处理。</p></div>
-<nav class="pager"><a href="06-python.html"><span class="dir">← 上一册</span><span class="ttl">第 6 册 · Python 完整实现</span></a><a href="mcp-demo-py/README.md" class="next"><span class="dir">继续阅读 →</span><span class="ttl">Python 项目 README 与 SDK 手册</span></a></nav>
+<nav class="pager"><a href="06-python.html"><span class="dir">← 上一册</span><span class="ttl">第 6 册 · Python 完整实现</span></a><a href="../mcp-demo-py/README.md" class="next"><span class="dir">继续阅读 →</span><span class="ttl">Python 项目 README 与 SDK 手册</span></a></nav>
 
 </main>
 </div>
