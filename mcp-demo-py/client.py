@@ -7,8 +7,8 @@ from mcp.types import TextContent, TextResourceContents
 
 # 使用与 client 相同的 Python；脚本路径不依赖当前工作目录。
 SERVER = StdioServerParameters(
-    command=sys.executable,
-    args=[str(Path(__file__).with_name("server.py"))],
+    command=sys.executable, # 表示“使用当前这个 Python 解释器”
+    args=[str(Path(__file__).with_name("server.py"))], # 运行同目录的 server.py
 )
 
 

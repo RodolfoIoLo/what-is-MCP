@@ -12,7 +12,7 @@
 
 MCPServer 不负责思考问题，也不会自动调用大模型。这里负责调用大模型的是 `agent.py`。
 
-> 阅读环境：Python 3.11+，官方 Python SDK `mcp==2.3.0`。依赖固定在 [pyproject.toml](pyproject.toml)。这份 README 是 [第 6 册 Python 实践](../06-python.html)的配套手册。
+> 阅读环境：Python 3.11+，官方 Python SDK `mcp==2.3.0`。依赖固定在 [pyproject.toml](pyproject.toml)。这份 README 是 [第 6 册 Python 实践](../MCP-learning-guide/06-python.html)的配套手册。
 >
 > **前半程不需要 API Key。** 跑通 `client.py` 就能验证 MCP 服务；只有最后的 Agent 示例需要模型 API。
 
@@ -510,4 +510,4 @@ server 的调试日志用 `logging`，或明确写到 stderr；stdio 的 stdout 
 - [官方入门文档](https://py.sdk.modelcontextprotocol.io/get-started/)：按当前 SDK 文档学习更多能力。
 - [SDK API 参考](https://py.sdk.modelcontextprotocol.io/api/mcp/)：需要 Context、lifespan 等进阶接口时查阅。
 - [OpenAI 工具调用说明](https://developers.openai.com/api/docs/guides/function-calling)：核对 Agent 如何接收工具调用并回填结果；这段交互属于模型 API，不属于 MCP。
-- [返回教程索引](../index.html)。
+- [返回教程索引](../MCP-learning-guide/index.html)。

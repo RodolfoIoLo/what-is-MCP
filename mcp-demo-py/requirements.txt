@@ -26,7 +26,7 @@ Pygments==2.21.0
 PyJWT==2.15.1
 python-dotenv==1.2.4
 python-multipart==0.0.32
-pywin32==312
+pywin32==312; sys_platform == "win32"
 referencing==0.37.0
 rich==15.0.0
 rpds-py==2026.9.1
