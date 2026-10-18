@@ -1,5 +1,10 @@
-.workbuddy-ai
+.workbuddy-ai/
+.venv/
+__pycache__/
+*.py[cod]
+.env
+.DS_Store
 
-__pycache__
-
-.venv
+# Go demo build outputs (recreate with go build).
+mcp-demo-go/filesystem-server
+mcp-demo-go/filesystem-server.exe
