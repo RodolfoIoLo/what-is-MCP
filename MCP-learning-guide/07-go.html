@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 7 册 · Go 文件系统 MCP</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#ffffff; --bg-soft:#f7f8fa; --bg-code:#f6f8fa; --bg-card:#ffffff;
+  --text:#1f2328; --text-2:#59636e; --text-3:#818b98;
+  --border:#d8dee4; --border-2:#eaeef2;
+  --blue:#0969da; --blue-bg:#ddf4ff;
+  --orange:#bc4c00; --orange-bg:#fff1e5;
+  --green:#1a7f37; --green-bg:#dafbe1;
+  --red:#cf222e; --red-bg:#ffebe9;
+  --purple:#8250df; --purple-bg:#fbefff;
+  --radius:10px;
+  --mono:ui-monospace,"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.78;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.topbar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.88);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--border-2)}
+.topbar-inner{max-width:1280px;margin:0 auto;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font-weight:700;font-size:15px;color:var(--text)}
+.brand span{color:var(--text-3);font-weight:500;margin-left:8px;font-size:13px}
+.crumbs{font-size:13px;color:var(--text-3);font-family:var(--mono)}
+.layout{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:250px minmax(0,1fr);padding:0 28px}
+.sidebar{position:sticky;top:57px;align-self:start;height:calc(100vh - 57px);overflow-y:auto;padding:34px 24px 40px 0;border-right:1px solid var(--border-2)}
+.side-group{margin-bottom:26px}
+.side-group .gh{font-size:11.5px;font-family:var(--mono);letter-spacing:.8px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px}
+.side-group a{display:block;font-size:13.5px;color:var(--text-2);padding:5px 10px;border-radius:6px;margin-bottom:2px;line-height:1.5}
+.side-group a:hover{background:var(--bg-soft);text-decoration:none;color:var(--text)}
+.side-group a.active{background:var(--blue-bg);color:#0a3069;font-weight:600}
+.side-group a.sub{padding-left:22px;font-size:13px;color:var(--text-3)}
+.side-group a.sub:hover{color:var(--text)}
+main.article{padding:40px 0 96px 48px;min-width:0;max-width:880px}
+h1.title{font-size:36px;line-height:1.25;letter-spacing:-.5px;margin:0 0 16px;font-weight:800}
+.subtitle{font-size:18px;color:var(--text-2);line-height:1.7;margin:0 0 20px}
+.meta{font-size:12.5px;font-family:var(--mono);color:var(--text-3);margin-bottom:36px;padding-bottom:22px;border-bottom:1px solid var(--border-2)}
+h2{font-size:25px;letter-spacing:-.3px;margin:54px 0 18px;font-weight:700}
+h2 .num{font-family:var(--mono);font-size:16px;color:var(--orange);margin-right:10px;font-weight:600}
+h3{font-size:18.5px;margin:36px 0 12px;font-weight:700}
+h4{font-size:16px;margin:26px 0 8px;font-weight:700;color:var(--text-2)}
+p{margin:0 0 16px}
+ul,ol{margin:0 0 16px;padding-left:24px}
+li{margin-bottom:7px}
+strong{font-weight:700}
+code{font-family:var(--mono);font-size:.87em;background:rgba(31,35,40,.06);padding:2px 6px;border-radius:5px}
+pre{background:var(--bg-code);border:1px solid var(--border-2);border-radius:var(--radius);padding:16px 18px;overflow-x:auto;margin:0 0 18px;font-size:13.5px;line-height:1.68}
+pre code{background:none;padding:0;font-size:13.5px}
+.codeblock{position:relative;margin:0 0 22px}
+.codeblock .lang{position:absolute;top:0;right:0;font-family:var(--mono);font-size:11px;color:var(--text-3);background:var(--bg-code);border:1px solid var(--border-2);border-top:none;border-right:none;border-radius:0 10px 0 8px;padding:3px 10px;letter-spacing:.5px}
+.codeblock pre{margin:0}
+.codeblock.tall pre{max-height:600px}
+.codeblock.out pre{background:#fbfcfd}
+table{width:100%;border-collapse:collapse;margin:0 0 22px;font-size:13.5px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border-2);vertical-align:top}
+th{font-size:11.5px;font-family:var(--mono);letter-spacing:.4px;text-transform:uppercase;color:var(--text-3);border-bottom:1px solid var(--border);font-weight:600}
+tbody tr:hover{background:var(--bg-soft)}
+.note{border-radius:var(--radius);padding:16px 20px;margin:22px 0;font-size:14.5px;line-height:1.75;border:1px solid}
+.note .nt{font-weight:700;font-size:12.5px;font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;display:block}
+.note p{margin:0 0 8px}
+.note p:last-child{margin-bottom:0}
+.note.info{background:var(--bg-soft);border-color:var(--border)}
+.note.info .nt{color:var(--text-2)}
+.note.warn{background:var(--orange-bg);border-color:#ffd8b5}
+.note.warn .nt{color:var(--orange)}
+.note.ok{background:var(--green-bg);border-color:#aceebb}
+.note.ok .nt{color:var(--green)}
+.note.bad{background:var(--red-bg);border-color:#ffcecb}
+.note.bad .nt{color:var(--red)}
+.lede{background:var(--blue-bg);border:1px solid #b6e3ff;border-radius:var(--radius);padding:20px 24px;margin:0 0 32px}
+.lede .lbl{font-size:12px;font-family:var(--mono);color:var(--blue);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;font-weight:700}
+.lede p{margin:0;font-size:16px;line-height:1.8}
+.summary-box{background:linear-gradient(180deg,#f0f9ff,#e8f4ff);border:1px solid #b6e3ff;border-radius:12px;padding:22px 26px;margin:36px 0 8px}
+.summary-box .st{font-size:12px;font-family:var(--mono);letter-spacing:.8px;text-transform:uppercase;color:var(--blue);font-weight:700;margin-bottom:10px}
+.summary-box p{margin:0;font-size:17px;line-height:1.8}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:60px;padding-top:26px;border-top:1px solid var(--border-2)}
+.pager a{flex:1;border:1px solid var(--border);border-radius:10px;padding:14px 18px;color:inherit}
+.pager a:hover{text-decoration:none;border-color:#b6c2cf;background:var(--bg-soft)}
+.pager .dir{font-size:11.5px;font-family:var(--mono);color:var(--text-3);letter-spacing:.5px;display:block;margin-bottom:4px}
+.pager .ttl{font-weight:600;font-size:14.5px}
+.pager .next{text-align:right}
+.filetree{background:var(--bg-code);border:1px solid var(--border-2);border-radius:var(--radius);padding:16px 20px;font-family:var(--mono);font-size:13px;line-height:1.85;margin:0 0 22px;white-space:pre;overflow-x:auto}
+.filetree .c{color:var(--text-3)}
+@media(max-width:1000px){
+  .layout{grid-template-columns:1fr;padding:0 18px}
+  .sidebar{display:none}
+  main.article{padding:28px 0 72px}
+  h1.title{font-size:28px}
+  table{display:block;overflow-x:auto}
+  th,td{min-width:120px}
+  :not(pre)>code{overflow-wrap:anywhere}
+  td code,th code{white-space:nowrap;overflow-wrap:normal}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">MCP 学习合集</a>
+    <div class="crumbs">第 7 册 / 共 7 册</div>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <div class="side-group">
+    <div class="gh">全部册子</div>
+    <a href="index.html">索引</a>
+    <a href="01-essence.html">01 · MCP 到底是什么</a>
+    <a href="02-architecture.html">02 · 角色与结构</a>
+    <a href="03-protocol.html">03 · 协议与报文</a>
+    <a href="04-ecosystem.html">04 · 生态全景</a>
+    <a href="05-configure.html">05 · 怎么配置</a>
+    <a href="06-python.html">06 · Python 完整实现</a>
+    <a href="07-go.html" class="active">07 · Go 文件系统 MCP</a>
+    <a href="mcp-demo-py/README.md">手册 · Python SDK</a>
+  </div>
+  <div class="side-group">
+    <div class="gh">本册目录</div>
+    <a href="#s1" class="sub">1. 这次做什么</a>
+    <a href="#s2" class="sub">2. 准备目录和依赖</a>
+    <a href="#s3" class="sub">3. 写服务端</a>
+    <a href="#s4" class="sub">4. 写验证客户端</a>
+    <a href="#s5" class="sub">5. 运行并核对结果</a>
+    <a href="#s6" class="sub">6. 读懂 Go SDK 的写法</a>
+    <a href="#s7" class="sub">7. 一次读文件的来回</a>
+    <a href="#s8" class="sub">8. 接入现成的 Host</a>
+    <a href="#s9" class="sub">9. 扩展与练习</a>
+    <a href="#s10" class="sub">10. 排错与参考</a>
+  </div>
+</aside>
+
+<main class="article">
+
+<h1 class="title">用 Go 写一个文件系统 MCP</h1>
+<p class="subtitle">用熟悉的 Go 代码接入 MCP：实现列目录和读取文本，再看清工具注册、协议会话与结果返回。</p>
+<div class="meta">第 7 册 · Go 1.25+ · 官方 go-sdk v1.8.0 · 示例采用 stdio</div>
+<div class="lede"><div class="lbl">这一册的成果</div>
+<p>完成后，客户端可以读取一个指定目录中的 UTF-8 文本，并在路径越界或文件过大时收到明确错误。整个示例不需要数据库，也不需要模型 API Key。第 6 册学习查数据，这次练习处理真实文件。</p></div>
+<p>本章面向有 Go 编程基础、第一次使用 MCP / MCP SDK 的开发者。重点是 SDK 如何把普通函数暴露为工具，以及 Client 如何发现、调用并取得结果；泛型处理函数、上下文和生命周期会结合示例简要说明。</p>
+
+<h2 id="s1"><span class="num">1</span>这次做什么</h2>
+<table><thead><tr><th>工具</th><th>输入</th><th>输出</th></tr></thead><tbody>
+<tr><td><code>list_directory</code></td><td><code>{"path":"."}</code></td><td>目录条目，以及结果是否被截断</td></tr>
+<tr><td><code>read_text_file</code></td><td><code>{"path":"hello.txt"}</code></td><td>文件相对路径和文本内容</td></tr>
+</tbody></table>
+<p><code>.</code> 表示配置的根目录；<code>notes/guide.md</code> 表示根目录下 notes 文件夹中的文件。服务只提供读取能力，不提供写入、删除或执行文件。读文件最多 64 KiB，列目录最多返回 100 个条目。</p>
+<div class="note info"><span class="nt">这里的“根目录”是谁决定的？</span><p>由启动 server 的人通过 <code>-root</code> 参数指定，例如 <code>./workspace</code>。它不是电脑磁盘根目录，也不由模型随意选择。<code>os.Root</code> 用于限制文件访问范围；它不等于运行任意程序的沙箱。</p></div>
+
+<h2 id="s2"><span class="num">2</span>准备目录和依赖</h2>
+<p>先安装 Go 1.25 或更新版本，运行 <code>go version</code> 确认。接着在一个新目录中执行：</p>
+<div class="codeblock"><span class="lang">终端</span>
+<pre><code>mkdir mcp-demo-go
+cd mcp-demo-go
+go mod init example.com/mcp-demo-go
+go get github.com/modelcontextprotocol/go-sdk/mcp@v1.8.0
+mkdir server
+mkdir client
+mkdir workspace</code></pre></div>
+<p><code>go mod init</code> 给项目建立依赖清单，<code>go get</code> 下载指定版本的 SDK。这个示例没有 SQLite 驱动，文件操作来自 Go 标准库。</p>
+<div class="filetree">mcp-demo-go/
+├── go.mod
+├── go.sum
+├── server/
+│   └── main.go        # 下一节的服务端代码
+├── client/
+│   └── main.go        # 第 4 节的客户端代码
+└── workspace/
+    └── hello.txt      # 手动创建一个 UTF-8 文本文件</div>
+<p>用编辑器创建 <code>workspace/hello.txt</code>，保存为 UTF-8，写入下面这行文字：</p>
+<div class="codeblock"><span class="lang">hello.txt</span>
+<pre><code data-file="workspace/hello.txt">Hello, MCP!</code></pre></div>
+<p>server 和 client 各自有一个 <code>main()</code> 入口，所以放进两个子目录。后面 <code>go build ./server</code> 构建服务端，<code>go run ./client</code> 运行客户端。</p>
+<div class="note info"><span class="nt">已有项目怎么办？</span><p>不要在已有目录重复执行 <code>go mod init</code>。初次学习建议使用新的 <code>mcp-demo-go</code> 目录，以免和 Python 示例混在一起。依赖下载失败时先检查网络与本机 Go 代理配置，不必为教程永久修改全局设置。</p></div>
+
+<h2 id="s3"><span class="num">3</span>写服务端：server/main.go</h2>
+<p>把下面代码完整保存到 <code>server/main.go</code>。先浏览四个部分即可：输入输出类型、路径打开函数、两个工具、启动服务。暂时不熟悉的签名可以等到第 6 节再看。</p>
+<div class="codeblock"><span class="lang">Go · server/main.go</span>
+<pre><code data-file="server/main.go">package main
+
+import (
+	"context"
+	"flag"
+	"fmt"
+	"io"
+	"log"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+	"unicode/utf8"
+
+	"github.com/modelcontextprotocol/go-sdk/mcp"
+)
+
+const maxFileBytes = 64 * 1024
+const maxEntries = 100
+
+// JSON 字段名是客户端实际发送的名字。
+type PathInput struct {
+	Path string `json:"path" jsonschema:"Path relative to the configured root; use . for its top directory"`
+}
+
+type Entry struct {
+	Name  string `json:"name"`
+	IsDir bool   `json:"is_dir"`
+}
+
+type DirectoryResult struct {
+	Entries   []Entry `json:"entries"`
+	Truncated bool    `json:"truncated"`
+}
+
+type FileResult struct {
+	Path string `json:"path"`
+	Text string `json:"text"`
+}
+
+// 所有打开操作都经过 os.Root，而不是只做字符串前缀判断。
+func openLocal(root *os.Root, name string) (*os.File, error) {
+	if !filepath.IsLocal(name) {
+		return nil, fmt.Errorf("请使用根目录内的相对路径，例如 . 或 notes/hello.txt")
+	}
+	file, err := root.Open(name)
+	if err != nil {
+		return nil, fmt.Errorf("无法打开 %q；请检查路径、权限和根目录范围", name)
+	}
+	return file, nil
+}
+
+func main() {
+	rootPath := flag.String("root", "./workspace", "Directory available to this server")
+	flag.Parse()
+
+	root, err := os.OpenRoot(*rootPath)
+	if err != nil {
+		log.Fatal("无法打开根目录：", err)
+	}
+	defer root.Close()
+
+	server := mcp.NewServer(
+		&amp;mcp.Implementation{Name: "filesystem-demo", Version: "0.1.0"},
+		&amp;mcp.ServerOptions{
+			Instructions: "先列目录，再读取需要的文本。所有路径相对于配置的根目录；此服务不提供写入或删除。",
+		},
+	)
+
+	mcp.AddTool(server, &amp;mcp.Tool{
+		Name:        "list_directory",
+		Description: "列出指定目录的至多 100 个条目。path 为根目录内相对路径，. 表示根目录。",
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input PathInput) (*mcp.CallToolResult, DirectoryResult, error) {
+		file, err := openLocal(root, input.Path)
+		if err != nil {
+			return nil, DirectoryResult{}, err
+		}
+		defer file.Close()
+
+		items, err := file.ReadDir(maxEntries + 1)
+		if err != nil &amp;&amp; err != io.EOF {
+			return nil, DirectoryResult{}, fmt.Errorf("无法列目录：请确认 %q 是目录", input.Path)
+		}
+		truncated := len(items) &gt; maxEntries
+		if truncated {
+			items = items[:maxEntries]
+		}
+		sort.Slice(items, func(i, j int) bool { return items[i].Name() &lt; items[j].Name() })
+
+		entries := make([]Entry, 0, len(items))
+		for _, item := range items {
+			entries = append(entries, Entry{Name: item.Name(), IsDir: item.IsDir()})
+		}
+		return nil, DirectoryResult{Entries: entries, Truncated: truncated}, nil
+	})
+
+	mcp.AddTool(server, &amp;mcp.Tool{
+		Name:        "read_text_file",
+		Description: "读取根目录内不超过 64 KiB 的 UTF-8 文本文件；不接受目录、过大文件或含 NUL 的内容。",
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input PathInput) (*mcp.CallToolResult, FileResult, error) {
+		file, err := openLocal(root, input.Path)
+		if err != nil {
+			return nil, FileResult{}, err
+		}
+		defer file.Close()
+
+		info, err := file.Stat()
+		if err != nil || !info.Mode().IsRegular() {
+			return nil, FileResult{}, fmt.Errorf("请提供普通文本文件的路径")
+		}
+		data, err := io.ReadAll(io.LimitReader(file, maxFileBytes+1))
+		if err != nil {
+			return nil, FileResult{}, fmt.Errorf("读取 %q 失败", input.Path)
+		}
+		if len(data) &gt; maxFileBytes {
+			return nil, FileResult{}, fmt.Errorf("文件超过 64 KiB，请选择较小的文本文件")
+		}
+		if !utf8.Valid(data) || strings.ContainsRune(string(data), '\x00') {
+			return nil, FileResult{}, fmt.Errorf("文件不是本示例支持的 UTF-8 文本")
+		}
+		return nil, FileResult{Path: input.Path, Text: string(data)}, nil
+	})
+
+	// log 默认写 stderr；stdout 留给 MCP 报文。
+	log.Printf("filesystem-demo 已启动，根目录：%s", *rootPath)
+	if err := server.Run(context.Background(), &amp;mcp.StdioTransport{}); err != nil {
+		log.Fatal(err)
+	}
+}</code></pre></div>
+<p>这里的两次 <code>mcp.AddTool</code> 是注册。只有客户端发起调用，SDK 才会执行对应的处理函数。<code>server.Run</code> 则负责持续接收和处理请求。</p>
+<div class="note info"><span class="nt">路径检查为什么有两层？</span><p><code>filepath.IsLocal</code> 先拒绝绝对路径和词法上越界的路径，帮助给出清楚的提示；真正打开文件使用 <code>root.Open</code>，避免目录中的符号链接把读取带到根目录以外。仅用字符串判断“路径以 workspace 开头”并不可靠。</p><p>这是限定目录读取的学习示例。操作系统权限、挂载点等仍属于运行环境的边界，不能由一个路径字符串检查全部解决。</p></div>
+
+<h2 id="s4"><span class="num">4</span>写验证客户端：client/main.go</h2>
+<p>这个客户端会启动服务端，然后做三件事：列目录、读取 hello.txt、尝试越界读取。前两次应该成功，第三次应该失败。</p>
+<div class="codeblock"><span class="lang">Go · client/main.go</span>
+<pre><code data-file="client/main.go">package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"time"
+
+	"github.com/modelcontextprotocol/go-sdk/mcp"
+)
+
+func run() error {
+	if len(os.Args) != 3 {
+		return fmt.Errorf("用法：go run ./client &lt;server 可执行文件&gt; &lt;允许访问的目录&gt;")
+	}
+	serverPath, err := filepath.Abs(os.Args[1])
+	if err != nil {
+		return err
+	}
+	rootPath, err := filepath.Abs(os.Args[2])
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	client := mcp.NewClient(
+		&amp;mcp.Implementation{Name: "filesystem-client", Version: "0.1.0"},
+		nil,
+	)
+	command := exec.Command(serverPath, "-root", rootPath)
+	command.Stderr = os.Stderr
+	session, err := client.Connect(ctx, &amp;mcp.CommandTransport{Command: command}, nil)
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	listed, err := session.ListTools(ctx, nil)
+	if err != nil {
+		return err
+	}
+	for _, tool := range listed.Tools {
+		fmt.Println("工具：", tool.Name)
+	}
+
+	// 先列目录，再读文件，最后验证越界路径会被拒绝。
+	cases := []struct {
+		name string
+		path string
+	}{
+		{"list_directory", "."},
+		{"read_text_file", "hello.txt"},
+		{"read_text_file", "../outside.txt"},
+	}
+	for _, item := range cases {
+		result, err := session.CallTool(ctx, &amp;mcp.CallToolParams{
+			Name:      item.name,
+			Arguments: map[string]any{"path": item.path},
+		})
+		if err != nil {
+			return fmt.Errorf("MCP 请求失败：%w", err)
+		}
+		fmt.Printf("\n%s(%q) is_error=%v\n", item.name, item.path, result.IsError)
+		if result.IsError {
+			for _, block := range result.Content {
+				if text, ok := block.(*mcp.TextContent); ok {
+					fmt.Println(text.Text)
+				}
+			}
+			continue
+		}
+		data, err := json.MarshalIndent(result.StructuredContent, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(data))
+	}
+	return nil
+}
+
+func main() {
+	if err := run(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}</code></pre></div>
+<p><code>CommandTransport</code> 启动指定程序，并把标准输入、标准输出接成 MCP 通道；<code>client.Connect</code> 建立协议会话，返回的 session 用于后续请求；<code>session.Close()</code> 负责关闭这条会话。业务代码不需要自己拼报文或管理消息分帧。</p>
+
+<h2 id="s5"><span class="num">5</span>运行并核对结果</h2>
+<p>以下命令都在 <code>mcp-demo-go</code> 项目根目录执行。先编译 server，再让 client 启动编译好的程序。</p>
+<div class="codeblock"><span class="lang">Windows PowerShell</span>
+<pre><code>go build -o filesystem-server.exe ./server
+go run ./client ./filesystem-server.exe ./workspace</code></pre></div>
+<div class="codeblock"><span class="lang">macOS / Linux</span>
+<pre><code>go build -o filesystem-server ./server
+go run ./client ./filesystem-server ./workspace</code></pre></div>
+<p><b>不用另外启动 server。</b>客户端会完成这一步。输出中会看到两个工具名，然后出现类似结果：</p>
+<div class="codeblock"><span class="lang">关键输出（文件结尾换行可能不同）</span>
+<pre><code>list_directory(".") is_error=false
+{
+  "entries": [{"name": "hello.txt", "is_dir": false}],
+  "truncated": false
+}
+
+read_text_file("hello.txt") is_error=false
+{
+  "path": "hello.txt",
+  "text": "Hello, MCP!"
+}
+
+read_text_file("../outside.txt") is_error=true
+请使用根目录内的相对路径，例如 . 或 notes/hello.txt</code></pre></div>
+<p>如果 hello.txt 最后有换行，JSON 中的 text 会多一个 <code>\n</code>，不影响正确性。目录中有其他文件时，列表也会更多。目录超过 100 个条目时，返回读取到的一批条目并标记 <code>truncated=true</code>；本例没有实现分页。</p>
+<p>第三次调用是特意设计的失败用例。它证明工具拒绝了越界路径，而不是 client 没连上。<code>outside.txt</code> 不需要真的存在。</p>
+
+<h2 id="s6"><span class="num">6</span>读懂 Go SDK 的写法</h2>
+<h3>先看输入：结构体就是参数说明</h3>
+<div class="codeblock"><span class="lang">Go · 代码摘录</span>
+<pre><code>type PathInput struct {
+    Path string `json:"path" jsonschema:"Path relative to the configured root; use . for its top directory"`
+}</code></pre></div>
+<p>这里关注的是 SDK 如何生成工具定义：输入结构体决定参数结构，<code>json</code> 标签决定对外字段名，<code>jsonschema</code> 标签补充参数说明。客户端通过 <code>tools/list</code> 取得这些信息，调用时提交 <code>{"path":"hello.txt"}</code>；SDK 校验并解码后，处理函数才收到 PathInput。</p>
+<h3>再看处理函数：三个输入、三个返回值</h3>
+<div class="codeblock"><span class="lang">Go · 签名示意</span>
+<pre><code>func(
+    ctx context.Context,
+    req *mcp.CallToolRequest,
+    input PathInput,
+) (*mcp.CallToolResult, FileResult, error)</code></pre></div>
+<table><thead><tr><th>位置</th><th>在这里的作用</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td>携带取消、超时等执行上下文；本例的本地文件读取没有额外使用它</td></tr>
+<tr><td><code>req</code></td><td>完整 MCP 调用信息；暂时不用，可以先不展开</td></tr>
+<tr><td><code>input</code></td><td>SDK 解码并检查后的业务参数，读取 <code>input.Path</code> 即可</td></tr>
+<tr><td>第一个返回值</td><td>自定义 MCP 结果。本例返回 <code>nil</code>，交给 SDK 生成</td></tr>
+<tr><td>第二个返回值</td><td>业务结果，如 <code>FileResult{Path: ..., Text: ...}</code></td></tr>
+<tr><td>第三个返回值</td><td><code>nil</code> 表示成功；普通 <code>error</code> 在此高层注册方式下转换成工具错误</td></tr>
+</tbody></table>
+<p>因此成功时的 <code>return nil, FileResult{...}, nil</code> 可以读成：“不用自定义报文；业务结果在这里；没有错误。”失败时的 <code>return nil, FileResult{}, err</code> 则是：“没有可用业务结果；错误原因在这里。”</p>
+<p>本例使用的是泛型函数 <code>mcp.AddTool</code>，SDK 会自动转换结果、处理工具错误。不要把它与更底层的 <code>server.AddTool</code> 混淆；后者的参数和错误处理约定不同。</p>
+<p>这里没有显式写泛型实参，因为 Go 会从处理函数签名推导输入和输出类型；SDK 再据此生成输入、输出 Schema。修改 PathInput 或 FileResult，不只是修改内部类型，也是在修改客户端看到的工具接口。</p>
+<h3>共享依赖与服务生命周期</h3>
+<p>两个处理函数复用启动时打开的 <code>root</code>，服务退出时再统一关闭。MCP 不规定业务代码必须放在闭包里：后续可以提取独立 handler，或通过结构体注入依赖，只要保持工具定义与处理函数的输入输出一致。</p>
+<h3>和 Python 对照一下</h3>
+<table><thead><tr><th>工作</th><th>Python</th><th>本例 Go 写法</th></tr></thead><tbody>
+<tr><td>创建服务</td><td><code>MCPServer(...)</code></td><td><code>mcp.NewServer(...)</code></td></tr>
+<tr><td>注册工具</td><td><code>@mcp.tool()</code></td><td><code>mcp.AddTool(...)</code></td></tr>
+<tr><td>描述参数</td><td>类型注解、默认值、docstring</td><td>输入结构体、字段标签、Tool.Description</td></tr>
+<tr><td>返回数据</td><td>返回普通值或 BaseModel</td><td>返回输出结构体，由 SDK 填入 StructuredContent</td></tr>
+<tr><td>启动 stdio</td><td><code>mcp.run()</code></td><td><code>server.Run(ctx, &amp;mcp.StdioTransport{})</code></td></tr>
+<tr><td>客户端调用</td><td><code>await client.call_tool(...)</code></td><td><code>session.CallTool(ctx, ...)</code></td></tr>
+</tbody></table>
+
+<h2 id="s7"><span class="num">7</span>一次读文件的完整来回</h2>
+<div class="filetree">client 调用 read_text_file，参数 path="hello.txt"
+  ↓
+Client SDK 生成 tools/call 请求，通过 stdio 发送
+  ↓
+Server SDK 找到 read_text_file 并检查输入结构
+  ↓
+处理函数通过 root.Open 打开文件，检查类型与大小，读取文本
+  ↓
+返回 FileResult{Path: "hello.txt", Text: "Hello, MCP!"}
+  ↓
+Server SDK 生成 MCP 响应
+  ↓
+Client SDK 解码 → result.StructuredContent → 打印 JSON</div>
+<p>这条链路没有调用大模型。接入 AI 应用后，变化发生在前面：由模型决定调用哪个工具、给什么参数，Host 再用 MCP Client 执行。服务端依然只处理明确的工具请求。</p>
+<p><code>session.CallTool</code> 有两层需要检查：返回的 <code>err</code> 代表请求层失败；拿到结果后，还要看 <code>result.IsError</code> 判断工具是否执行成功。</p>
+
+<h2 id="s8"><span class="num">8</span>接入现成的 Host</h2>
+<p>将编译好的可执行文件配置为本地 MCP server。下面是常见 JSON 配置形状；不同 Host 的入口和字段可能不同，应以它的配置说明为准。</p>
+<div class="codeblock"><span class="lang">Windows · 配置示例</span>
+<pre><code>{
+  "mcpServers": {
+    "filesystem-demo": {
+      "command": "C:/projects/mcp-demo-go/filesystem-server.exe",
+      "args": ["-root", "C:/projects/mcp-demo-go/workspace"]
+    }
+  }
+}</code></pre></div>
+<p>把两个路径替换为本机的绝对路径。Windows 的 JSON 可以使用正斜杠，避免反斜杠转义问题；macOS/Linux 则使用对应的可执行文件和目录绝对路径。</p>
+<p>连接成功后，可以让助手：“列出允许目录中的文件，再读取 hello.txt，告诉我里面写了什么。”在 Host 中查看工具调用记录，应先看到 <code>list_directory</code>，再看到 <code>read_text_file</code>。如果服务已连接但模型没有调用，检查提示和 Host 的工具启用状态。</p>
+<p>修改 Go 代码后要重新执行 <code>go build</code>，再重启 Host 中的 server。Host 启动的是编译后的文件，不会自动读取新的源码。</p>
+
+<h2 id="s9"><span class="num">9</span>扩展与练习</h2>
+<p>可以用三个小练习验证对 SDK 的理解：</p>
+<ol>
+<li>在 workspace 中创建 <code>notes/guide.md</code>，用 <code>path="notes/guide.md"</code> 读取，确认路径以配置根目录为起点。</li>
+<li>新增 <code>file_info</code> 工具，只返回文件大小和修改时间。复用 PathInput，但定义新的输出结构体。</li>
+<li>分别读取不存在的文件、目录、超过 64 KiB 的文件，观察错误是否清楚，客户端是否仍能继续调用。</li>
+</ol>
+<p>这个 server 只实现 Tools 就已经是一个可用的 MCP server；不需要为了“凑齐三种原语”再添加 Resource 和 Prompt。如果以后想按 URI 暴露固定的项目说明，再考虑资源；需要复用对话步骤时，再考虑提示模板。</p>
+
+<h2 id="s10"><span class="num">10</span>排错与参考</h2>
+<table><thead><tr><th>现象</th><th>检查方法</th></tr></thead><tbody>
+<tr><td>找不到 Go 或版本过低</td><td>先运行 <code>go version</code>；本教程固定的 SDK 需要 Go 1.25+</td></tr>
+<tr><td>找不到 server 可执行文件</td><td>先执行 go build；Windows 注意 .exe 后缀</td></tr>
+<tr><td>无法打开根目录</td><td>确认 workspace 已创建，并检查 client 最后一个参数（允许访问的目录）</td></tr>
+<tr><td>hello.txt 读取失败</td><td>确认文件放在指定的 workspace 内，保存为 UTF-8</td></tr>
+<tr><td>独立启动 server 后一直等待</td><td>stdio 服务正在等请求；使用 client 或 Host 连接</td></tr>
+<tr><td>JSON 解析报错</td><td>不要在 server 中用 fmt.Println 输出调试内容；使用 log 写 stderr</td></tr>
+<tr><td>工具列表没有更新</td><td>重新编译 server，再重启它</td></tr>
+</tbody></table>
+<p>核对接口时可参考 <a href="https://github.com/modelcontextprotocol/go-sdk/tree/v1.8.0">官方 Go SDK v1.8.0</a>、<a href="https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk/mcp">mcp 包参考</a>和 <a href="https://pkg.go.dev/os#Root">os.Root 文档</a>。本章示例围绕目录和普通文本文件展开，扩展到大文件、分页或写入时，需要重新设计接口与边界。</p>
+<div class="summary-box"><div class="st">把这三个动作记下来</div><p>用结构体描述输入输出，用 <code>mcp.AddTool</code> 注册处理函数，用 <code>server.Run</code> 接收请求。文件怎么读由你写，MCP 消息怎么收发由 SDK 处理。</p></div>
+<nav class="pager"><a href="06-python.html"><span class="dir">← 上一册</span><span class="ttl">第 6 册 · Python 完整实现</span></a><a href="mcp-demo-py/README.md" class="next"><span class="dir">继续阅读 →</span><span class="ttl">Python 项目 README 与 SDK 手册</span></a></nav>
+
+</main>
+</div>
+
+</body>
+</html>

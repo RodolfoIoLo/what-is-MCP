@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 2 册 · 角色与结构</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#ffffff; --bg-soft:#f7f8fa; --bg-code:#f6f8fa; --bg-card:#ffffff;
+  --text:#1f2328; --text-2:#59636e; --text-3:#818b98;
+  --border:#d8dee4; --border-2:#eaeef2;
+  --blue:#0969da; --blue-bg:#ddf4ff;
+  --orange:#bc4c00; --orange-bg:#fff1e5;
+  --green:#1a7f37; --green-bg:#dafbe1;
+  --red:#cf222e; --red-bg:#ffebe9;
+  --purple:#8250df; --purple-bg:#fbefff;
+  --radius:10px;
+  --mono:ui-monospace,"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.78;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.topbar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.88);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--border-2)}
+.topbar-inner{max-width:1280px;margin:0 auto;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font-weight:700;font-size:15px;color:var(--text)}
+.brand span{color:var(--text-3);font-weight:500;margin-left:8px;font-size:13px}
+.crumbs{font-size:13px;color:var(--text-3);font-family:var(--mono)}
+.layout{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:250px minmax(0,1fr);padding:0 28px}
+.sidebar{position:sticky;top:57px;align-self:start;height:calc(100vh - 57px);overflow-y:auto;padding:34px 24px 40px 0;border-right:1px solid var(--border-2)}
+.side-group{margin-bottom:26px}
+.side-group .gh{font-size:11.5px;font-family:var(--mono);letter-spacing:.8px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px}
+.side-group a{display:block;font-size:13.5px;color:var(--text-2);padding:5px 10px;border-radius:6px;margin-bottom:2px;line-height:1.5}
+.side-group a:hover{background:var(--bg-soft);text-decoration:none;color:var(--text)}
+.side-group a.active{background:var(--blue-bg);color:#0a3069;font-weight:600}
+.side-group a.sub{padding-left:22px;font-size:13px;color:var(--text-3)}
+.side-group a.sub:hover{color:var(--text)}
+main.article{padding:40px 0 96px 48px;min-width:0;max-width:840px}
+h1.title{font-size:36px;line-height:1.25;letter-spacing:-.5px;margin:0 0 16px;font-weight:800}
+.subtitle{font-size:18px;color:var(--text-2);line-height:1.7;margin:0 0 20px}
+.meta{font-size:12.5px;font-family:var(--mono);color:var(--text-3);margin-bottom:36px;padding-bottom:22px;border-bottom:1px solid var(--border-2)}
+h2{font-size:25px;letter-spacing:-.3px;margin:54px 0 18px;font-weight:700}
+h2 .num{font-family:var(--mono);font-size:16px;color:var(--orange);margin-right:10px;font-weight:600}
+h3{font-size:18.5px;margin:36px 0 12px;font-weight:700}
+h4{font-size:16px;margin:26px 0 8px;font-weight:700;color:var(--text-2)}
+p{margin:0 0 16px}
+ul,ol{margin:0 0 16px;padding-left:24px}
+li{margin-bottom:7px}
+strong{font-weight:700}
+code{font-family:var(--mono);font-size:.87em;background:rgba(31,35,40,.06);padding:2px 6px;border-radius:5px}
+pre{background:var(--bg-code);border:1px solid var(--border-2);border-radius:var(--radius);padding:16px 18px;overflow-x:auto;margin:0 0 18px;font-size:13.5px;line-height:1.65}
+pre code{background:none;padding:0;font-size:13.5px}
+.codeblock{position:relative;margin:0 0 22px}
+.codeblock .lang{position:absolute;top:0;right:0;font-family:var(--mono);font-size:11px;color:var(--text-3);background:var(--bg-code);border:1px solid var(--border-2);border-top:none;border-right:none;border-radius:0 10px 0 8px;padding:3px 10px;letter-spacing:.5px}
+.codeblock pre{margin:0}
+table{width:100%;border-collapse:collapse;margin:0 0 22px;font-size:14px}
+th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--border-2);vertical-align:top}
+th{font-size:12px;font-family:var(--mono);letter-spacing:.4px;text-transform:uppercase;color:var(--text-3);border-bottom:1px solid var(--border);font-weight:600}
+tbody tr:hover{background:var(--bg-soft)}
+.note{border-radius:var(--radius);padding:16px 20px;margin:22px 0;font-size:14.5px;line-height:1.75;border:1px solid}
+.note .nt{font-weight:700;font-size:12.5px;font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;display:block}
+.note p{margin:0 0 8px}
+.note p:last-child{margin-bottom:0}
+.note.info{background:var(--bg-soft);border-color:var(--border)}
+.note.info .nt{color:var(--text-2)}
+.note.warn{background:var(--orange-bg);border-color:#ffd8b5}
+.note.warn .nt{color:var(--orange)}
+.note.ok{background:var(--green-bg);border-color:#aceebb}
+.note.ok .nt{color:var(--green)}
+.note.bad{background:var(--red-bg);border-color:#ffcecb}
+.note.bad .nt{color:var(--red)}
+.lede{background:var(--blue-bg);border:1px solid #b6e3ff;border-radius:var(--radius);padding:20px 24px;margin:0 0 32px}
+.lede .lbl{font-size:12px;font-family:var(--mono);color:var(--blue);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;font-weight:700}
+.lede p{margin:0;font-size:16px;line-height:1.8}
+.summary-box{background:linear-gradient(180deg,#f0f9ff,#e8f4ff);border:1px solid #b6e3ff;border-radius:12px;padding:22px 26px;margin:36px 0 8px}
+.summary-box .st{font-size:12px;font-family:var(--mono);letter-spacing:.8px;text-transform:uppercase;color:var(--blue);font-weight:700;margin-bottom:10px}
+.summary-box p{margin:0;font-size:17px;line-height:1.8}
+figure{margin:26px 0}
+figure svg{max-width:100%;height:auto;display:block;margin:0 auto}
+figcaption{font-size:13px;color:var(--text-3);text-align:center;margin-top:12px;font-family:var(--mono);line-height:1.6}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:60px;padding-top:26px;border-top:1px solid var(--border-2)}
+.pager a{flex:1;border:1px solid var(--border);border-radius:10px;padding:14px 18px;color:inherit}
+.pager a:hover{text-decoration:none;border-color:#b6c2cf;background:var(--bg-soft)}
+.pager .dir{font-size:11.5px;font-family:var(--mono);color:var(--text-3);letter-spacing:.5px;display:block;margin-bottom:4px}
+.pager .ttl{font-weight:600;font-size:14.5px}
+.pager .next{text-align:right}
+.prim{border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:0 0 18px;background:var(--bg-card)}
+.prim .ph{display:flex;align-items:baseline;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.prim .ph h3{margin:0;font-size:19px}
+.prim .badge{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid}
+.prim .badge.model{color:var(--purple);border-color:#d8c4f5;background:var(--purple-bg)}
+.prim .badge.app{color:var(--blue);border-color:#b6e3ff;background:var(--blue-bg)}
+.prim .badge.user{color:var(--orange);border-color:#ffd8b5;background:var(--orange-bg)}
+.prim p:last-child{margin-bottom:0}
+.prim .methods{font-family:var(--mono);font-size:12.5px;color:var(--text-2);margin:12px 0 0;background:var(--bg-code);border:1px solid var(--border-2);border-radius:8px;padding:10px 14px}
+@media(max-width:1000px){
+  .layout{grid-template-columns:1fr;padding:0 18px}
+  .sidebar{display:none}
+  main.article{padding:28px 0 72px}
+  h1.title{font-size:28px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">MCP 学习合集</a>
+    <div class="crumbs">第 2 册 / 共 7 册</div>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <div class="side-group">
+    <div class="gh">全部册子</div>
+    <a href="index.html">索引</a>
+    <a href="01-essence.html">01 · MCP 到底是什么</a>
+    <a href="02-architecture.html" class="active">02 · 角色与结构</a>
+    <a href="03-protocol.html">03 · 协议与报文</a>
+    <a href="04-ecosystem.html">04 · 生态全景</a>
+    <a href="05-configure.html">05 · 怎么配置</a>
+    <a href="06-python.html">06 · Python 完整实现</a>
+    <a href="07-go.html">07 · Go 文件系统 MCP</a>
+    <a href="mcp-demo-py/README.md">手册 · Python SDK</a>
+  </div>
+  <div class="side-group">
+    <div class="gh">本册目录</div>
+    <a href="#s1" class="sub">1. 三个角色各自的职责</a>
+    <a href="#s2" class="sub">2. 两层架构</a>
+    <a href="#s3" class="sub">3. 服务端三种原语</a>
+    <a href="#s4" class="sub">4. 客户端原语</a>
+    <a href="#s5" class="sub">5. 能力协商</a>
+    <a href="#s6" class="sub">6. 一句话总结</a>
+  </div>
+</aside>
+
+<main class="article">
+
+  <h1 class="title">角色与结构</h1>
+  <p class="subtitle">Host、Client、Server 各自负责什么；协议被切成哪两层；Server 能对外暴露哪三种东西，以及它们的区别到底在哪。</p>
+  <div class="meta">第 2 册 · 基于 MCP 规范 2026-07-28</div>
+
+  <div class="lede">
+    <div class="lbl">本册要解决的问题</div>
+    <p>第 1 册给了三个角色的名字，但没讲它们各自干什么。这一册把结构画清楚 —— 特别是「Server 暴露的三种东西（工具 / 资源 / 提示）到底有什么区别」，这是理解 MCP 最重要的一道坎。</p>
+  </div>
+
+  <h2 id="s1"><span class="num">1</span>三个角色各自的职责</h2>
+
+  <h3>Host（主机）</h3>
+  <p>Host 是用户直接面对的那个 AI 应用。它的职责是「编排」，具体包括：</p>
+  <ul>
+    <li><b>管理连接</b>：知道要连哪些 Server，为每个 Server 创建并持有一个 Client。</li>
+    <li><b>聚合能力</b>：把所有 Server 提供的东西汇总成一份清单，交给模型。</li>
+    <li><b>驱动模型</b>：把用户的问题 + 聚合后的能力清单一起送给模型，由模型决定要不要调用。</li>
+    <li><b>执行调用</b>：模型决定调用某个工具后，Host 通过对应的 Client 把请求发给对应的 Server。</li>
+    <li><b>把关与呈现</b>：在把用户数据发给 Server 之前征得同意；把 Server 返回的结果回填给模型；把最终答案呈现给用户。</li>
+  </ul>
+  <p>注意最后两条 —— Host 是那个「负责安全和用户体验」的角色。协议本身不做权限判断，判断权在 Host 手里。</p>
+
+  <h3>Client（客户端）</h3>
+  <p>Client 不是独立程序，它是 Host 内部的一个对象 / 组件。它和 Server 是<b>一对一</b>的：一条连接一个 Client。职责是：</p>
+  <ul>
+    <li>建立并维持到某一个 Server 的连接。</li>
+    <li>把 Host 的意图翻译成 MCP 消息发出去。</li>
+    <li>接收 Server 的响应和通知，交给 Host。</li>
+    <li>代表 Host 向 Server 声明「我这边支持什么」（客户端能力，见第 5 节）。</li>
+  </ul>
+
+  <h3>Server（服务器）</h3>
+  <p>Server 是能力提供方。职责是：</p>
+  <ul>
+    <li>声明自己提供哪些能力（哪些工具、哪些资源、哪些提示）。</li>
+    <li>接收调用请求，执行实际操作（读文件、查数据库、调 API……），返回结果。</li>
+    <li>在需要的时候，反过来向 Client 请求信息（例如向用户确认，见第 4 节）。</li>
+  </ul>
+
+  <div class="note warn">
+    <span class="nt">「Server」这个词有个坑</span>
+    <p>MCP 里的 Server 指「<b>提供能力的程序</b>」，和它跑在哪里无关。它可能是一个跑在你本机、由 Host 拉起来的进程（用 stdio 传输），也可能是一个跑在云端、被很多 Host 同时连接的 HTTP 服务。</p>
+    <p>所以当你听到「MCP Server」时，先别假设它是网络服务 —— 大多数你日常配置的其实是<b>本地进程</b>。</p>
+  </div>
+
+  <h2 id="s2"><span class="num">2</span>两层架构</h2>
+
+  <p>MCP 规范把自己分成两层，理解这个分层能解释很多困惑。</p>
+
+  <table>
+    <thead>
+      <tr><th>层</th><th>负责什么</th><th>包含</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>数据层</b>（Data layer）</td>
+        <td>消息的<b>内容</b>：怎么声明能力、怎么调用、怎么返回、方法叫什么名字</td>
+        <td>JSON-RPC 2.0 消息格式、能力协商、三种原语、通知</td>
+      </tr>
+      <tr>
+        <td><b>传输层</b>（Transport layer）</td>
+        <td>消息的<b>通路</b>：字节怎么从一端到另一端、连接怎么建立、授权怎么做</td>
+        <td><b>stdio</b>（标准输入输出）、<b>Streamable HTTP</b></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>概念上，数据层是内层，传输层是外层：数据层的内容被装进传输层送出去。换传输方式，数据层的消息一个字都不用改。</p>
+
+  <figure>
+    <svg viewBox="0 0 620 300" role="img" aria-label="MCP 的两层架构">
+      <rect x="20" y="20" width="580" height="260" rx="14" fill="#f7f8fa" stroke="#d8dee4" stroke-width="1.4"/>
+      <text x="44" y="46" font-family="monospace" font-size="12" fill="#59636e" font-weight="bold">MCP</text>
+
+      <rect x="46" y="60" width="528" height="196" rx="12" fill="#ffffff" stroke="#0969da" stroke-width="1.4"/>
+      <text x="70" y="86" font-family="-apple-system,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif" font-size="14" fill="#0a3069" font-weight="bold">数据层 Data layer</text>
+      <text x="70" y="106" font-family="-apple-system,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif" font-size="12" fill="#59636e">JSON-RPC 2.0 · 能力协商 · tools / resources / prompts · 通知</text>
+
+      <rect x="70" y="126" width="480" height="112" rx="10" fill="#f0f9ff" stroke="#0969da" stroke-width="1.2" stroke-dasharray="4 4"/>
+      <text x="92" y="150" font-family="-apple-system,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif" font-size="13.5" fill="#0a3069" font-weight="bold">传输层 Transport layer</text>
+      <rect x="92" y="164" width="200" height="54" rx="8" fill="#ffffff" stroke="#8fc7ff" stroke-width="1.2"/>
+      <text x="192" y="186" text-anchor="middle" font-family="monospace" font-size="12.5" fill="#0a3069">stdio</text>
+      <text x="192" y="204" text-anchor="middle" font-family="-apple-system,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif" font-size="11" fill="#59636e">进程标准输入输出</text>
+
+      <rect x="320" y="164" width="208" height="54" rx="8" fill="#ffffff" stroke="#8fc7ff" stroke-width="1.2"/>
+      <text x="424" y="186" text-anchor="middle" font-family="monospace" font-size="12.5" fill="#0a3069">Streamable HTTP</text>
+      <text x="424" y="204" text-anchor="middle" font-family="-apple-system,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif" font-size="11" fill="#59636e">HTTP POST（+ 可选流式）</text>
+    </svg>
+    <figcaption>数据层规定「说什么」，传输层规定「怎么送」。换传输不改消息。</figcaption>
+  </figure>
+
+  <div class="note info">
+    <span class="nt">为什么要分这两层</span>
+    <p>因为「本地进程之间」和「跨网络的远端服务」需要的通路完全不同：前者用管道最省事，后者必须走 HTTP。把内容（数据层）和通路（传输层）分开，同一套消息格式就能同时服务这两种场景，也让「本地 server 改造成远端 server」变成只换传输层的事。</p>
+  </div>
+
+  <h2 id="s3"><span class="num">3</span>服务端三种原语</h2>
+
+  <p><b>原语</b>（primitive）是规范里的术语，指「协议规定的、可以被暴露出来的基本能力单元」。Server 可以暴露三种：</p>
+
+  <div class="prim">
+    <div class="ph">
+      <h3>Tools（工具）</h3>
+      <span class="badge model">由模型决定</span>
+    </div>
+    <p>可被执行的<b>函数</b>。它做一件事，有输入参数，有返回值。比如「读某个文件」「执行一条 SQL」「创建一个 issue」。</p>
+    <p>工具是三种原语里唯一「会产生副作用」的（可能写文件、改数据库、发请求），所以也是安全上最需要小心的。</p>
+    <div class="methods">发现：tools/list &nbsp;·&nbsp; 执行：tools/call</div>
+  </div>
+
+  <div class="prim">
+    <div class="ph">
+      <h3>Resources（资源）</h3>
+      <span class="badge app">由应用决定</span>
+    </div>
+    <p>可被读取的<b>数据</b>。它没有参数、不执行动作，只是「把一份内容交出来」。比如「某个文件的内容」「数据库的表结构」「某个 API 的响应」。</p>
+    <p>资源是只读的、被动的内容来源。每个资源有一个 URI 标识（例如 <code>file:///notes/todo.md</code>）。</p>
+    <div class="methods">发现：resources/list &nbsp;·&nbsp; 读取：resources/read</div>
+  </div>
+
+  <div class="prim">
+    <div class="ph">
+      <h3>Prompts（提示模板）</h3>
+      <span class="badge user">由用户决定</span>
+    </div>
+    <p>可复用的<b>消息模板</b>。它本身不执行也不返回数据，而是产出「一段可以直接送进模型的话」，通常带占位参数。比如一个「代码审查」模板，参数是文件路径，产出是结构化的审查指令。</p>
+    <p>它面向的是<b>用户</b>：用户在界面上主动选择一个模板来发起对话，而不是模型自己决定。</p>
+    <div class="methods">发现：prompts/list &nbsp;·&nbsp; 获取：prompts/get</div>
+  </div>
+
+  <h3>三者的区别：看「谁决定」</h3>
+
+  <p>很多人分不清这三种，是因为从「功能」角度看它们都能给模型提供东西。真正的区别在<b>控制权</b>：<b>谁来决定这个东西被用上。</b></p>
+
+  <table>
+    <thead>
+      <tr><th>原语</th><th>形态</th><th>谁决定使用</th><th>典型场景</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Tools</b></td>
+        <td>可执行函数</td>
+        <td><b>模型</b>自己判断该不该调</td>
+        <td>「帮我把这条待办标记完成」</td>
+      </tr>
+      <tr>
+        <td><b>Resources</b></td>
+        <td>可读取数据</td>
+        <td><b>Host 应用</b>决定把哪些塞进上下文</td>
+        <td>「把当前打开的文件作为背景资料」</td>
+      </tr>
+      <tr>
+        <td><b>Prompts</b></td>
+        <td>消息模板</td>
+        <td><b>用户</b>主动选择</td>
+        <td>「用『代码审查』模板，参数是这个文件」</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <figure>
+    <svg viewBox="0 0 680 250" role="img" aria-label="三种原语的控制权">
+      <g font-family="-apple-system,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif">
+        <rect x="24" y="70" width="150" height="110" rx="12" fill="#fbefff" stroke="#8250df" stroke-width="1.4"/>
+        <text x="99" y="104" text-anchor="middle" font-size="15" fill="#6639ba" font-weight="bold">Tools</text>
+        <text x="99" y="128" text-anchor="middle" font-size="11.5" fill="#8250df">模型发起</text>
+        <text x="99" y="150" text-anchor="middle" font-size="10.5" fill="#818b98">model-controlled</text>
+
+        <rect x="265" y="70" width="150" height="110" rx="12" fill="#ddf4ff" stroke="#0969da" stroke-width="1.4"/>
+        <text x="340" y="104" text-anchor="middle" font-size="15" fill="#0a3069" font-weight="bold">Resources</text>
+        <text x="340" y="128" text-anchor="middle" font-size="11.5" fill="#0969da">应用发起</text>
+        <text x="340" y="150" text-anchor="middle" font-size="10.5" fill="#818b98">app-controlled</text>
+
+        <rect x="506" y="70" width="150" height="110" rx="12" fill="#fff1e5" stroke="#bc4c00" stroke-width="1.4"/>
+        <text x="581" y="104" text-anchor="middle" font-size="15" fill="#7d3200" font-weight="bold">Prompts</text>
+        <text x="581" y="128" text-anchor="middle" font-size="11.5" fill="#bc4c00">用户发起</text>
+        <text x="581" y="150" text-anchor="middle" font-size="10.5" fill="#818b98">user-controlled</text>
+      </g>
+      <text x="340" y="42" text-anchor="middle" font-family="monospace" font-size="12" fill="#59636e">区别不在功能，在「谁决定它被用上」</text>
+      <text x="340" y="216" text-anchor="middle" font-family="-apple-system,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif" font-size="11.5" fill="#818b98">三者都由 Server 暴露，但触发方不同</text>
+    </svg>
+    <figcaption>同一个 Server 可以同时提供三种；它们对应三种不同的触发方。</figcaption>
+  </figure>
+
+  <div class="note ok">
+    <span class="nt">一个例子把三者串起来</span>
+    <p>假设一个「数据库」Server：</p>
+    <p>它暴露 <b>工具</b>「执行只读查询」—— 模型看到用户问「上个月销售额多少」，自己决定调用它。<br>
+       它暴露 <b>资源</b>「数据库表结构」—— Host 应用在会话开始时把表结构塞进上下文，让模型知道有哪些表。<br>
+       它暴露 <b>提示</b>「写一条分析查询」—— 用户在界面上点这个模板，输入「分析退货率」，生成一段结构化的指令。</p>
+    <p>三种原语在同一个 Server 里并存，各管一摊。</p>
+  </div>
+
+  <h2 id="s4"><span class="num">4</span>客户端原语</h2>
+
+  <p>反过来，Client 也可以向 Server 声明能力。这就是第 1 册提到的「MCP 是双向的」的含义。</p>
+
+  <table>
+    <thead>
+      <tr><th>原语</th><th>方向</th><th>作用</th><th>状态</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Elicitation</b>（征询）</td>
+        <td>Server → Client → 用户</td>
+        <td>Server 在执行过程中需要额外信息时（例如「这个操作要确认吗」「缺一个参数」），向用户发起提问</td>
+        <td>可用</td>
+      </tr>
+      <tr>
+        <td>Sampling</td>
+        <td>Server → Client</td>
+        <td>Server 想借 Client 的模型做一次生成</td>
+        <td><b>已弃用</b>（2026-07-28 起）</td>
+      </tr>
+      <tr>
+        <td>Roots</td>
+        <td>Client → Server</td>
+        <td>Client 告诉 Server「我的工作目录边界在哪」</td>
+        <td><b>已弃用</b></td>
+      </tr>
+      <tr>
+        <td>Logging</td>
+        <td>Server → Client</td>
+        <td>Server 向 Client 发日志</td>
+        <td><b>已弃用</b></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note warn">
+    <span class="nt">为什么这里要提「已弃用」的</span>
+    <p>因为你在网上会大量看到 Sampling、Roots、Logging 的介绍，很多教程把它们当核心概念讲。它们在 2026-07-28 版被标记为弃用（有至少 12 个月的过渡期，仍然能用，但新实现不该再用）。</p>
+    <p>规范给出的替代方案：Sampling 建议直接集成模型厂商的 API；Logging 建议写到 <code>stderr</code> 或用 OpenTelemetry。你现在开始学，只需要重点掌握 <b>Elicitation</b> 这一个客户端原语。</p>
+  </div>
+
+  <h2 id="s5"><span class="num">5</span>能力协商</h2>
+
+  <p>两端连上之后，需要互相知道「你会什么」。这个动作叫<b>能力协商</b>（capability negotiation）。</p>
+
+  <p>在 2026-07-28 版里，协商不是一次性的握手，而是<b>每个请求自己带着</b>：</p>
+
+  <ul>
+    <li>客户端在<b>每一个请求</b>里，通过 <code>_meta</code> 字段声明自己的版本、身份和能力（比如「我支持 Elicitation」）。</li>
+    <li>服务端的能力通过一个叫 <code>server/discover</code> 的方法获取。客户端<b>可以</b>在正式发请求前先调它一次，拿到服务端支持哪些能力、哪些协议版本；也可以不调，直接发请求，遇到不支持再说。</li>
+  </ul>
+
+  <div class="codeblock">
+    <span class="lang">JSON · server/discover 的返回（节选）</span>
+<pre><code>{
+  "capabilities": {
+    "tools":     { "listChanged": true },
+    "resources": { "listChanged": true },
+    "prompts":   { "listChanged": false }
+  },
+  "supportedVersions": ["2026-07-28"],
+  "serverInfo": { "name": "my-db-server", "version": "1.0.0" }
+}</code></pre>
+  </div>
+
+  <p>读法：这个 Server 支持 tools 和 resources，且当工具或资源列表变化时会主动通知；支持 prompts 但不发变更通知。它只支持 2026-07-28 这一个协议版本。</p>
+
+  <div class="note info">
+    <span class="nt">为什么要协商</span>
+    <p>因为 Server 不是什么都得实现。一个只读的文档 Server 可能只提供 resources，不提供 tools。客户端必须知道对方到底有什么，才能正确地组织后续请求 —— 总不能对着一个不支持 tools 的 Server 去调 <code>tools/list</code>。</p>
+    <p>同时，协议本身在演进（有多个日期版本），协商也是双方对齐「用哪个版本说话」的机制。</p>
+  </div>
+
+  <h2 id="s6"><span class="num">6</span>一句话总结</h2>
+
+  <div class="summary-box">
+    <div class="st">第 2 册 · 一句话总结</div>
+    <p>MCP 有三个角色：Host 是 AI 应用本体、Client 是 Host 内与单个 Server 一对一的连接组件、Server 是能力提供方；协议分两层 —— 数据层规定消息内容（JSON-RPC），传输层负责把消息送出去（stdio 或 Streamable HTTP）；Server 对外暴露三种原语，Tools 由模型决定调用、Resources 由应用决定读取、Prompts 由用户主动选择，区别不在功能而在控制权；Client 也能反向声明能力，当前可用的只有 Elicitation。</p>
+  </div>
+
+  <nav class="pager">
+    <a href="01-essence.html">
+      <span class="dir">← 上一册</span>
+      <span class="ttl">第 1 册 · MCP 到底是什么</span>
+    </a>
+    <a href="03-protocol.html" class="next">
+      <span class="dir">下一册 →</span>
+      <span class="ttl">第 3 册 · 协议与报文</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+
+</body>
+</html>

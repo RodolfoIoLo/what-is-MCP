@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 1 册 · MCP 到底是什么</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#ffffff; --bg-soft:#f7f8fa; --bg-code:#f6f8fa; --bg-card:#ffffff;
+  --text:#1f2328; --text-2:#59636e; --text-3:#818b98;
+  --border:#d8dee4; --border-2:#eaeef2;
+  --blue:#0969da; --blue-bg:#ddf4ff;
+  --orange:#bc4c00; --orange-bg:#fff1e5;
+  --green:#1a7f37; --green-bg:#dafbe1;
+  --red:#cf222e; --red-bg:#ffebe9;
+  --purple:#8250df; --purple-bg:#fbefff;
+  --radius:10px;
+  --mono:ui-monospace,"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.78;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.topbar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.88);
+  backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--border-2)}
+.topbar-inner{max-width:1280px;margin:0 auto;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font-weight:700;font-size:15px;color:var(--text)}
+.brand span{color:var(--text-3);font-weight:500;margin-left:8px;font-size:13px}
+.crumbs{font-size:13px;color:var(--text-3);font-family:var(--mono)}
+
+.layout{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:250px minmax(0,1fr);padding:0 28px}
+.sidebar{position:sticky;top:57px;align-self:start;height:calc(100vh - 57px);overflow-y:auto;
+  padding:34px 24px 40px 0;border-right:1px solid var(--border-2)}
+.side-group{margin-bottom:26px}
+.side-group .gh{font-size:11.5px;font-family:var(--mono);letter-spacing:.8px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px}
+.side-group a{display:block;font-size:13.5px;color:var(--text-2);padding:5px 10px;border-radius:6px;margin-bottom:2px;line-height:1.5}
+.side-group a:hover{background:var(--bg-soft);text-decoration:none;color:var(--text)}
+.side-group a.active{background:var(--blue-bg);color:#0a3069;font-weight:600}
+.side-group a.sub{padding-left:22px;font-size:13px;color:var(--text-3)}
+.side-group a.sub:hover{color:var(--text)}
+
+main.article{padding:40px 0 96px 48px;min-width:0;max-width:840px}
+h1.title{font-size:36px;line-height:1.25;letter-spacing:-.5px;margin:0 0 16px;font-weight:800}
+.subtitle{font-size:18px;color:var(--text-2);line-height:1.7;margin:0 0 20px}
+.meta{font-size:12.5px;font-family:var(--mono);color:var(--text-3);margin-bottom:36px;padding-bottom:22px;border-bottom:1px solid var(--border-2)}
+
+h2{font-size:25px;letter-spacing:-.3px;margin:54px 0 18px;font-weight:700}
+h2 .num{font-family:var(--mono);font-size:16px;color:var(--orange);margin-right:10px;font-weight:600}
+h3{font-size:18.5px;margin:36px 0 12px;font-weight:700}
+h4{font-size:16px;margin:26px 0 8px;font-weight:700;color:var(--text-2)}
+p{margin:0 0 16px}
+ul,ol{margin:0 0 16px;padding-left:24px}
+li{margin-bottom:7px}
+strong{font-weight:700}
+code{font-family:var(--mono);font-size:.87em;background:rgba(31,35,40,.06);padding:2px 6px;border-radius:5px}
+
+pre{background:var(--bg-code);border:1px solid var(--border-2);border-radius:var(--radius);padding:16px 18px;overflow-x:auto;margin:0 0 18px;font-size:13.5px;line-height:1.65}
+pre code{background:none;padding:0;font-size:13.5px}
+.codeblock{position:relative;margin:0 0 22px}
+.codeblock .lang{position:absolute;top:0;right:0;font-family:var(--mono);font-size:11px;color:var(--text-3);background:var(--bg-code);border:1px solid var(--border-2);border-top:none;border-right:none;border-radius:0 10px 0 8px;padding:3px 10px;letter-spacing:.5px}
+.codeblock pre{margin:0}
+
+table{width:100%;border-collapse:collapse;margin:0 0 22px;font-size:14px}
+th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--border-2);vertical-align:top}
+th{font-size:12px;font-family:var(--mono);letter-spacing:.4px;text-transform:uppercase;color:var(--text-3);border-bottom:1px solid var(--border);font-weight:600}
+tbody tr:hover{background:var(--bg-soft)}
+
+.note{border-radius:var(--radius);padding:16px 20px;margin:22px 0;font-size:14.5px;line-height:1.75;border:1px solid}
+.note .nt{font-weight:700;font-size:12.5px;font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;display:block}
+.note p{margin:0 0 8px}
+.note p:last-child{margin-bottom:0}
+.note.info{background:var(--bg-soft);border-color:var(--border)}
+.note.info .nt{color:var(--text-2)}
+.note.warn{background:var(--orange-bg);border-color:#ffd8b5}
+.note.warn .nt{color:var(--orange)}
+.note.ok{background:var(--green-bg);border-color:#aceebb}
+.note.ok .nt{color:var(--green)}
+.note.bad{background:var(--red-bg);border-color:#ffcecb}
+.note.bad .nt{color:var(--red)}
+
+.lede{background:var(--blue-bg);border:1px solid #b6e3ff;border-radius:var(--radius);padding:20px 24px;margin:0 0 32px}
+.lede .lbl{font-size:12px;font-family:var(--mono);color:var(--blue);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;font-weight:700}
+.lede p{margin:0;font-size:16px;line-height:1.8}
+
+.summary-box{background:linear-gradient(180deg,#f0f9ff,#e8f4ff);border:1px solid #b6e3ff;border-radius:12px;padding:22px 26px;margin:36px 0 8px}
+.summary-box .st{font-size:12px;font-family:var(--mono);letter-spacing:.8px;text-transform:uppercase;color:var(--blue);font-weight:700;margin-bottom:10px}
+.summary-box p{margin:0;font-size:17px;line-height:1.8}
+
+.myth{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:0 0 16px}
+.myth .wrong{background:var(--red-bg);padding:13px 20px;font-size:14.5px;border-bottom:1px solid var(--border-2)}
+.myth .wrong b{color:var(--red);font-family:var(--mono);font-size:12px;letter-spacing:.4px;display:block;margin-bottom:3px}
+.myth .right{background:#fff;padding:14px 20px;font-size:14.5px;line-height:1.72}
+.myth .right b{color:var(--green);font-family:var(--mono);font-size:12px;letter-spacing:.4px;display:block;margin-bottom:3px}
+
+figure{margin:26px 0}
+figure svg{max-width:100%;height:auto;display:block;margin:0 auto}
+figcaption{font-size:13px;color:var(--text-3);text-align:center;margin-top:12px;font-family:var(--mono);line-height:1.6}
+
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:60px;padding-top:26px;border-top:1px solid var(--border-2)}
+.pager a{flex:1;border:1px solid var(--border);border-radius:10px;padding:14px 18px;color:inherit}
+.pager a:hover{text-decoration:none;border-color:#b6c2cf;background:var(--bg-soft)}
+.pager .dir{font-size:11.5px;font-family:var(--mono);color:var(--text-3);letter-spacing:.5px;display:block;margin-bottom:4px}
+.pager .ttl{font-weight:600;font-size:14.5px}
+.pager .next{text-align:right}
+
+@media(max-width:1000px){
+  .layout{grid-template-columns:1fr;padding:0 18px}
+  .sidebar{display:none}
+  main.article{padding:28px 0 72px}
+  h1.title{font-size:28px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">MCP 学习合集</a>
+    <div class="crumbs">第 1 册 / 共 7 册</div>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <div class="side-group">
+    <div class="gh">全部册子</div>
+    <a href="index.html">索引</a>
+    <a href="01-essence.html" class="active">01 · MCP 到底是什么</a>
+    <a href="02-architecture.html">02 · 角色与结构</a>
+    <a href="03-protocol.html">03 · 协议与报文</a>
+    <a href="04-ecosystem.html">04 · 生态全景</a>
+    <a href="05-configure.html">05 · 怎么配置</a>
+    <a href="06-python.html">06 · Python 完整实现</a>
+    <a href="07-go.html">07 · Go 文件系统 MCP</a>
+    <a href="mcp-demo-py/README.md">手册 · Python SDK</a>
+  </div>
+  <div class="side-group">
+    <div class="gh">本册目录</div>
+    <a href="#s1" class="sub">1. 它要解决的问题</a>
+    <a href="#s2" class="sub">2. 一条准确的定义</a>
+    <a href="#s3" class="sub">3. MCP 不是什么</a>
+    <a href="#s4" class="sub">4. 三个角色</a>
+    <a href="#s5" class="sub">5. 为什么到处都在设计它</a>
+    <a href="#s6" class="sub">6. 一句话总结</a>
+  </div>
+</aside>
+
+<main class="article">
+
+  <h1 class="title">MCP 到底是什么</h1>
+  <p class="subtitle">把「它本质上是个协议，配了之后 Agent 能访问一些资源」这句模糊的印象，换成一段你能复述给别人的准确表述。</p>
+  <div class="meta">第 1 册 · 基于 MCP 规范 2026-07-28</div>
+
+  <div class="lede">
+    <div class="lbl">本册要解决的困惑</div>
+    <p>这一册从三个问题开始：MCP 要解决什么问题、处于应用的哪一层、与工具调用有什么关系。读完后，可以用一条完整的调用链解释 MCP 的作用与边界。</p>
+  </div>
+
+  <h2 id="s1"><span class="num">1</span>它要解决的问题</h2>
+
+  <p>先不谈 MCP 本身，先看它在没有的时候，世界是什么样。</p>
+
+  <p>考虑一个常见的集成场景：</p>
+  <ul>
+    <li><b>三个 AI 应用</b>：Claude Desktop、VS Code 里的编程助手、你自己写的一个 Agent 程序。</li>
+    <li><b>三个数据源或能力</b>：你本机的文件系统、公司的 Postgres 数据库、GitHub 的 issue。</li>
+  </ul>
+
+  <p>如果没有统一标准，会发生什么？每让「某一个 AI 应用」访问「某一个数据源」，你就要为这个组合单独写一份对接代码 —— 怎么连、怎么认证、怎么把数据源的接口翻译成模型能用的形式、返回怎么解析。这些代码彼此不能复用。</p>
+
+  <p>三个应用配三个数据源，就是 <b>3 × 3 = 9 份</b>对接代码。如果应用变成 4 个、数据源变成 5 个，就是 <b>4 × 5 = 20 份</b>。数量是相乘的，所以叫 <b>M×N 问题</b>。</p>
+
+  <p>MCP 的做法是把这件事拆成两个方向：AI 应用这一侧统一实现「会讲 MCP」，数据源那一侧也统一实现「会讲 MCP」。双方都对着同一份规定说话，就不需要两两配对了。对接代码从 <b>M × N</b> 变成 <b>M + N</b>。三个应用配三个数据源，从 9 份变成 6 份；4 和 5 的情况下从 20 份变成 9 份。</p>
+
+  <figure>
+    <svg viewBox="0 0 760 330" role="img" aria-label="M×N 与 M+N 的对比">
+      <defs>
+        <marker id="ar" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 z" fill="#b6c2cf"/>
+        </marker>
+      </defs>
+
+      <!-- 左：M x N -->
+      <text x="20" y="24" font-family="monospace" font-size="12" fill="#cf222e" font-weight="bold">没有统一协议 · M × N 份适配</text>
+
+      <g font-family="-apple-system,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif" font-size="12">
+        <!-- 蓝：AI 应用 -->
+        <rect x="14" y="48" width="92" height="38" rx="7" fill="#ddf4ff" stroke="#0969da" stroke-width="1.2"/>
+        <text x="60" y="72" text-anchor="middle" fill="#0a3069">Claude</text>
+        <rect x="14" y="136" width="92" height="38" rx="7" fill="#ddf4ff" stroke="#0969da" stroke-width="1.2"/>
+        <text x="60" y="160" text-anchor="middle" fill="#0a3069">VS Code</text>
+        <rect x="14" y="224" width="92" height="38" rx="7" fill="#ddf4ff" stroke="#0969da" stroke-width="1.2"/>
+        <text x="60" y="248" text-anchor="middle" fill="#0a3069">你的 Agent</text>
+
+        <!-- 橙：数据源 -->
+        <rect x="234" y="48" width="92" height="38" rx="7" fill="#fff1e5" stroke="#bc4c00" stroke-width="1.2"/>
+        <text x="280" y="72" text-anchor="middle" fill="#7d3200">文件系统</text>
+        <rect x="234" y="136" width="92" height="38" rx="7" fill="#fff1e5" stroke="#bc4c00" stroke-width="1.2"/>
+        <text x="280" y="160" text-anchor="middle" fill="#7d3200">Postgres</text>
+        <rect x="234" y="224" width="92" height="38" rx="7" fill="#fff1e5" stroke="#bc4c00" stroke-width="1.2"/>
+        <text x="280" y="248" text-anchor="middle" fill="#7d3200">GitHub</text>
+      </g>
+
+      <!-- 9 条连线 -->
+      <g stroke="#d0d7de" stroke-width="1" fill="none">
+        <path d="M106,67 L234,67"/><path d="M106,67 L234,155"/><path d="M106,67 L234,243"/>
+        <path d="M106,155 L234,67"/><path d="M106,155 L234,155"/><path d="M106,155 L234,243"/>
+        <path d="M106,243 L234,67"/><path d="M106,243 L234,155"/><path d="M106,243 L234,243"/>
+      </g>
+      <text x="170" y="300" text-anchor="middle" font-family="monospace" font-size="12" fill="#cf222e" font-weight="bold">9 份互不复用的对接代码</text>
+
+      <!-- 分隔 -->
+      <line x1="368" y1="20" x2="368" y2="310" stroke="#eaeef2" stroke-width="1.5" stroke-dasharray="4 5"/>
+
+      <!-- 右：M + N -->
+      <text x="400" y="24" font-family="monospace" font-size="12" fill="#1a7f37" font-weight="bold">用了 MCP · M + N 份</text>
+
+      <g font-family="-apple-system,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif" font-size="12">
+        <rect x="400" y="48" width="86" height="38" rx="7" fill="#ddf4ff" stroke="#0969da" stroke-width="1.2"/>
+        <text x="443" y="72" text-anchor="middle" fill="#0a3069">Claude</text>
+        <rect x="400" y="136" width="86" height="38" rx="7" fill="#ddf4ff" stroke="#0969da" stroke-width="1.2"/>
+        <text x="443" y="160" text-anchor="middle" fill="#0a3069">VS Code</text>
+        <rect x="400" y="224" width="86" height="38" rx="7" fill="#ddf4ff" stroke="#0969da" stroke-width="1.2"/>
+        <text x="443" y="248" text-anchor="middle" fill="#0a3069">你的 Agent</text>
+
+        <rect x="546" y="86" width="72" height="150" rx="9" fill="#fbefff" stroke="#8250df" stroke-width="1.4"/>
+        <text x="582" y="156" text-anchor="middle" fill="#6639ba" font-weight="bold" font-size="13">MCP</text>
+        <text x="582" y="174" text-anchor="middle" fill="#6639ba" font-size="10.5">协议</text>
+
+        <rect x="674" y="48" width="74" height="38" rx="7" fill="#fff1e5" stroke="#bc4c00" stroke-width="1.2"/>
+        <text x="711" y="72" text-anchor="middle" fill="#7d3200">文件系统</text>
+        <rect x="674" y="136" width="74" height="38" rx="7" fill="#fff1e5" stroke="#bc4c00" stroke-width="1.2"/>
+        <text x="711" y="160" text-anchor="middle" fill="#7d3200">Postgres</text>
+        <rect x="674" y="224" width="74" height="38" rx="7" fill="#fff1e5" stroke="#bc4c00" stroke-width="1.2"/>
+        <text x="711" y="248" text-anchor="middle" fill="#7d3200">GitHub</text>
+      </g>
+
+      <g stroke="#c8b6ef" stroke-width="1.1" fill="none">
+        <path d="M486,67 L546,110"/><path d="M486,155 L546,161"/><path d="M486,243 L546,212"/>
+      </g>
+      <g stroke="#e8c9a8" stroke-width="1.1" fill="none">
+        <path d="M618,110 L674,67"/><path d="M618,161 L674,155"/><path d="M618,212 L674,243"/>
+      </g>
+      <text x="582" y="300" text-anchor="middle" font-family="monospace" font-size="12" fill="#1a7f37" font-weight="bold">6 份各自复用的实现</text>
+    </svg>
+    <figcaption>左：每个「应用 × 数据源」组合都要一份专属代码。右：两侧各自对着协议实现一次。</figcaption>
+  </figure>
+
+  <div class="note info">
+    <span class="nt">这里的关键</span>
+    <p>MCP 并没有让任何一方的功能变多。它唯一改变的是<b>对接成本的结构</b>：从乘法变成加法。这也是为什么理解 MCP 时，「它提供什么功能」是个错误的问题，「它规定了什么」才是对的问题。</p>
+  </div>
+
+  <h2 id="s2"><span class="num">2</span>一条准确的定义</h2>
+
+  <p>下面这句话可以直接背下来：</p>
+
+  <div class="note ok">
+    <span class="nt">定义</span>
+    <p><b>MCP（Model Context Protocol，模型上下文协议）是一套开放的、基于 JSON-RPC 2.0 的标准协议，用来规定「AI 应用」与「外部能力提供方」之间如何进行能力发现、请求调用和结果返回。</b></p>
+  </div>
+
+  <p>这句话里每个词都有信息量，逐个拆开：</p>
+
+  <h3>「开放的」</h3>
+  <p>它不属于某一家公司。MCP 由 Anthropic 在 2024 年 11 月提出，2025 年 12 月捐给了 Linux 基金会下的 Agentic AI Foundation。现在 Anthropic、OpenAI、Google、Microsoft 的产品和 SDK 都支持它。这一点决定了它和「某家厂商的私有插件机制」是两类东西。</p>
+
+  <h3>「基于 JSON-RPC 2.0」</h3>
+  <p>消息的格式不是自己发明的，用的是已有的 <b>JSON-RPC 2.0</b> 规范。这意味着：每一条 MCP 消息就是一个 JSON 对象，带固定的几个字段（<code>jsonrpc</code>、<code>method</code>、<code>id</code>、<code>params</code> 等）。你甚至不需要任何 SDK，手工拼 JSON 也能说 MCP。第 3 册会把真实报文摊开看。</p>
+
+  <h3>「标准协议」</h3>
+  <p>协议规定的是「<b>怎么对话</b>」，不是「提供什么」。规范文档里没有任何一个具体的工具、任何一个具体的数据库。它只规定：发现能力用哪个方法、调用工具用哪个方法、返回值应该长什么样。</p>
+
+  <h3>「AI 应用」与「外部能力提供方」</h3>
+  <p>这是协议的两端。MCP 规范里给它们起的正式名字分别是 <b>Host</b>（主机，即 AI 应用）和 <b>Server</b>（服务器，即能力提供方）。中间还有第三个角色 <b>Client</b>。下一节先认识这三个名字。</p>
+
+  <h2 id="s3"><span class="num">3</span>MCP 不是什么</h2>
+
+  <p>MCP 经常被用来指代不同层次的东西。先划清边界，再看具体用法，会更容易理解。下面是六条常见的误解。</p>
+
+  <div class="myth">
+    <div class="wrong"><b>误解 1</b>「MCP 是一个 AI 模型 / 一种 AI 技术。」</div>
+    <div class="right"><b>事实</b>MCP 里不包含任何模型，不做推理，不生成文本。它是应用与外部世界之间的对话规则。换掉背后的模型，MCP 一点不用变。</div>
+  </div>
+
+  <div class="myth">
+    <div class="wrong"><b>误解 2</b>「MCP 是一个框架 / 一个代码库。」</div>
+    <div class="right"><b>事实</b>MCP 是一份<b>规范</b>（specification），本质是一份规定消息格式的文档。你听到的「Python SDK」「Go SDK」是这份规范的<b>实现</b>，是别人写好方便你用的库，不是规范本身。不用 SDK 照样能写出符合 MCP 的程序。</div>
+  </div>
+
+  <div class="myth">
+    <div class="wrong"><b>误解 3</b>「MCP 是一种网络传输协议。」</div>
+    <div class="right"><b>事实</b>MCP 定义在传输层<b>之上</b>。它不关心字节怎么走 —— 可以用进程的标准输入输出（stdio）传，也可以用 HTTP 传。传输方式只是「信封」，MCP 规定的是「信的内容」。这是两个独立的层，第 2 册会画出来。</div>
+  </div>
+
+  <div class="myth">
+    <div class="wrong"><b>误解 4</b>「MCP 是一个工具集合 / 插件市场。」</div>
+    <div class="right"><b>事实</b>规范里一个具体工具都没有。你听说过的 <code>server-filesystem</code>、<code>server-github</code> 是别人按照 MCP 写出来的<b>程序</b>，属于「Server」这个角色的具体实现，不是 MCP 的组成部分。MCP 是插座标准，不是电器清单。</div>
+  </div>
+
+  <div class="myth">
+    <div class="wrong"><b>误解 5</b>「MCP 是 Anthropic / Claude 专属的。」</div>
+    <div class="right"><b>事实</b>它已经捐给 Linux 基金会，OpenAI、Google、Microsoft 都有支持。它是中立标准，不属于任何一家。</div>
+  </div>
+
+  <div class="myth">
+    <div class="wrong"><b>误解 6</b>「MCP 就是『AI 单方面调用工具』。」</div>
+    <div class="right"><b>事实</b>不完全是。MCP 是<b>双向</b>的能力声明：Server 可以暴露工具给 AI 用；同时 Client 也可以向 Server 声明自己的能力（例如「我可以向用户提问」）。这是它区别于普通 REST API 的一个要点，第 2 册会讲清楚双向分别是什么。</div>
+  </div>
+
+  <h2 id="s4"><span class="num">4</span>三个角色，先记住名字</h2>
+
+  <p>后面每一册都会反复用这三个词，所以这里先给最小的定义，第 2 册再展开。</p>
+
+  <table>
+    <thead>
+      <tr><th>角色</th><th>是什么</th><th>典型例子</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Host</b>（主机）</td>
+        <td>那个 AI 应用本身 —— 用户直接交互的东西。它负责管理下面所有连接。</td>
+        <td>Claude Desktop、VS Code、Cursor、你自己写的 Agent 程序</td>
+      </tr>
+      <tr>
+        <td><b>Client</b>（客户端）</td>
+        <td>Host 内部的一个组件。<b>每连接一个 Server，Host 就创建一个对应的 Client</b>。它负责维持这条连接、发消息、收结果。</td>
+        <td>不是独立程序，是 Host 里的一个对象</td>
+      </tr>
+      <tr>
+        <td><b>Server</b>（服务器）</td>
+        <td>提供能力的程序。它对外声明「我能做什么」，等待被调用。</td>
+        <td>filesystem server、github server、你按第 6/7 册写出来的那个</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note info">
+    <span class="nt">最容易记错的一点</span>
+    <p>Host 和 Client <b>都在同一侧</b>（AI 应用这一侧），不是两个阵营。一个 Host 内部可以有多个 Client，每个 Client 管一条到某个 Server 的连接。所以是「一 Host → 多 Client → 多 Server」的结构。</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 700 300" role="img" aria-label="Host、Client、Server 的关系">
+      <rect x="16" y="26" width="300" height="248" rx="14" fill="#f7f8fa" stroke="#d8dee4" stroke-width="1.4" stroke-dasharray="5 5"/>
+      <text x="166" y="52" text-anchor="middle" font-family="monospace" font-size="12" fill="#59636e" font-weight="bold">Host（AI 应用）</text>
+
+      <g font-family="-apple-system,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif" font-size="12.5">
+        <rect x="56" y="76" width="130" height="52" rx="8" fill="#ddf4ff" stroke="#0969da" stroke-width="1.3"/>
+        <text x="121" y="100" text-anchor="middle" fill="#0a3069" font-weight="bold">Client</text>
+        <text x="121" y="117" text-anchor="middle" fill="#0a3069" font-size="10.5">连接 1</text>
+
+        <rect x="56" y="176" width="130" height="52" rx="8" fill="#ddf4ff" stroke="#0969da" stroke-width="1.3"/>
+        <text x="121" y="200" text-anchor="middle" fill="#0a3069" font-weight="bold">Client</text>
+        <text x="121" y="217" text-anchor="middle" fill="#0a3069" font-size="10.5">连接 2</text>
+      </g>
+      <text x="166" y="262" text-anchor="middle" font-family="monospace" font-size="10.5" fill="#818b98">例：Claude Desktop / VS Code / 你的 Agent</text>
+
+      <g font-family="-apple-system,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif" font-size="12.5">
+        <rect x="440" y="76" width="230" height="52" rx="8" fill="#fff1e5" stroke="#bc4c00" stroke-width="1.3"/>
+        <text x="555" y="100" text-anchor="middle" fill="#7d3200" font-weight="bold">Server</text>
+        <text x="555" y="117" text-anchor="middle" fill="#7d3200" font-size="10.5">filesystem（本机）</text>
+
+        <rect x="440" y="176" width="230" height="52" rx="8" fill="#fff1e5" stroke="#bc4c00" stroke-width="1.3"/>
+        <text x="555" y="200" text-anchor="middle" fill="#7d3200" font-weight="bold">Server</text>
+        <text x="555" y="217" text-anchor="middle" fill="#7d3200" font-size="10.5">github（远程）</text>
+      </g>
+
+      <g stroke="#b6c2cf" stroke-width="1.4" fill="none">
+        <path d="M186,102 L440,102"/>
+        <path d="M186,202 L440,202"/>
+      </g>
+      <text x="313" y="95" text-anchor="middle" font-family="monospace" font-size="10.5" fill="#818b98">一条连接</text>
+      <text x="313" y="195" text-anchor="middle" font-family="monospace" font-size="10.5" fill="#818b98">一条连接</text>
+    </svg>
+    <figcaption>一个 Host 内部为每个 Server 创建一个 Client，各自维持一条独立连接。</figcaption>
+  </figure>
+
+  <h2 id="s5"><span class="num">5</span>为什么「到处都在设计 MCP」</h2>
+
+  <p>不同项目都可能声称自己在「做 MCP」，但具体工作并不相同：<b>同一个词，在不同语境下可能指协议、客户端、服务端或配套工具。</b></p>
+
+  <p>因为 MCP 定义的是「角色」，而每个角色都可以由不同的人、在不同的地方去实现。所有这些工作都可以被笼统地叫做「搞 MCP」。下表把常见的说法翻译一遍：</p>
+
+  <table>
+    <thead>
+      <tr><th>你听到的说法</th><th>实际在做什么</th><th>对应角色 / 层次</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>「我给 Cursor 配了个 MCP」</td>
+        <td>在 Cursor 的配置文件里加了一条 server 记录，让它启动 / 连接某个 server</td>
+        <td>在使用 Host 的配置能力</td>
+      </tr>
+      <tr>
+        <td>「我写了个 MCP server」</td>
+        <td>按规范实现一个对外提供能力的程序</td>
+        <td>实现 <b>Server</b></td>
+      </tr>
+      <tr>
+        <td>「我们的产品支持 MCP」</td>
+        <td>产品要么能当 Host（连别人的 server），要么自己就是 Server（被别人连）</td>
+        <td>实现 <b>Host</b> 或 <b>Server</b></td>
+      </tr>
+      <tr>
+        <td>「我用了 MCP SDK」</td>
+        <td>用官方 / 第三方的库来写 client 或 server，省去手拼 JSON</td>
+        <td>用 SDK 去实现某个角色</td>
+      </tr>
+      <tr>
+        <td>「我们在做 MCP 网关」</td>
+        <td>在企业里统一转发、鉴权、限流、审计所有 MCP 流量</td>
+        <td><b>中间层</b>（既不是 Host 也不是 Server）</td>
+      </tr>
+      <tr>
+        <td>「MCP 出了个新扩展」</td>
+        <td>在核心协议之外，加一层可选能力（如长任务、内联 UI）</td>
+        <td><b>扩展</b>（核心协议之上的可选模块）</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>所以当你再听到「某某设计了一个 MCP」时，只需要问一句：<b>它是在实现 Host、实现 Server、还是做中间层？</b> 问出这一句，模糊感基本就消掉了。第 4 册会把这张地图完整铺开。</p>
+
+  <h2 id="s6"><span class="num">6</span>一句话总结</h2>
+
+  <div class="summary-box">
+    <div class="st">第 1 册 · 一句话总结</div>
+    <p>MCP 是一份规定「AI 应用（Host）与能力提供方（Server）之间如何互相发现和调用」的开放协议，它把对接成本从 M×N 降成 M+N；它本身不含模型、不含工具、不含传输方式，只规定对话的格式；实现它的人分三种角色 —— Host、Client、Server，而「到处都在设计 MCP」的说法，只是在说不同的人在实现不同的角色。</p>
+  </div>
+
+  <nav class="pager">
+    <a href="index.html">
+      <span class="dir">← 返回</span>
+      <span class="ttl">索引页</span>
+    </a>
+    <a href="02-architecture.html" class="next">
+      <span class="dir">下一册 →</span>
+      <span class="ttl">第 2 册 · 角色与结构</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+
+</body>
+</html>
